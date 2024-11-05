@@ -37,7 +37,7 @@ namespace MinimalApi.Dominio.Servicos
             return _dbContexto.Veiculos.Find(id);
         }
 
-        public List<Veiculo> ListarVeiculos(int pagina = 1, string? nome = null, string? marca = null)
+        public List<Veiculo> Listar(int? pagina = 1, string? nome = null, string? marca = null)
         {
             //    var query = _dbContexto.Veiculos
             //         .Where(v => (nome == null || v.Nome.Contains(nome)) && (marca == null || v.Marca.Contains(marca)))
@@ -57,8 +57,11 @@ namespace MinimalApi.Dominio.Servicos
                 query = query.Where(v => EF.Functions.Like(v.Marca.ToLower(), $"%{marca.ToLower()}%"));
             }
 
-            query = query.Skip((pagina - 1) * 10).Take(10);
-
+            if (pagina != null)
+            {
+                query = query.Skip(((int)pagina - 1) * 10).Take(10);
+            }
+            
             return query.ToList();
         }
     }

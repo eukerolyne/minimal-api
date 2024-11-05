@@ -4,7 +4,7 @@ namespace MinimalApi.Infraestrutura.Interfaces
 {
     public interface IVeiculoServico
     {
-        List<Veiculo> ListarVeiculos(int pagina = 1, string? nome = null, string? marca = null);
+        List<Veiculo> Listar(int? pagina = 1, string? nome = null, string? marca = null);
         Veiculo? BuscaPorId(int id);
 
         void Adicionar(Veiculo veiculo);
