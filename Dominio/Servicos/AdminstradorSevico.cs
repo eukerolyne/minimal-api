@@ -24,5 +24,46 @@ namespace MinimalApi.Dominio.Servicos
 
             return administrador;
         }
+
+        public void Adicionar(Administrador administrador)
+        {
+            _dbContexto.Administradores.Add(administrador);
+            _dbContexto.SaveChanges();
+        }
+
+        public void Atualizar(Administrador administrador)
+        {
+            _dbContexto.Administradores.Update(administrador);
+            _dbContexto.SaveChanges();
+        }
+        
+        public void Apagar(Administrador administrador)
+        {
+            _dbContexto.Administradores.Remove(administrador);
+            _dbContexto.SaveChanges();
+        }
+
+        public List<Administrador> Listar(int? pagina = 1)
+        {
+            var query = _dbContexto.Administradores.AsQueryable();
+
+            if (pagina != null)
+            {
+                query = query.Skip(((int)pagina - 1) * 10).Take(10);
+            }
+
+           return query.ToList();
+        }
+
+        public Administrador? BuscaPorId(int id)
+        {
+            var administrador = _dbContexto.Administradores.Find(id);
+            if (administrador == null)
+            {
+                return null;
+            }
+
+            return administrador;
+        }
     }
 }

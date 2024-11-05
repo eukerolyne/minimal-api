@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using MinimalApi.Infraestrutura.Interfaces;
 using MinimalApi.Dominio.ModelViews;
 using MinimalApi.Dominio.Entidades;
+using MinimalApi.Dominio.Enuns;
 
 #region Builder
 
@@ -32,6 +33,32 @@ app.MapGet("/", () => Results.Json(new Home())).WithTags("Home");
 #endregion
 
 #region Administradores
+
+ErrosValidacao ValidaUsersDto(AdministradorDTO administradorDto)
+{
+    var validacao = new ErrosValidacao
+    {
+        Mensagens = new List<string>()
+    };
+
+    if (string.IsNullOrEmpty(administradorDto.Email))
+    {
+        validacao.Mensagens.Add("Email é obrigatório");
+    }
+
+    if (string.IsNullOrEmpty(administradorDto.Senha))
+    {
+        validacao.Mensagens.Add("Senha é obrigatória");
+    }
+
+    if (administradorDto.Perfil == null)
+    {
+        validacao.Mensagens.Add("Selecione um perfil");
+    }
+
+    return validacao;
+}
+
 app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDto, IAdministradorServico adminService) =>
 {
     if (adminService.Login(loginDto) != null)
@@ -42,12 +69,101 @@ app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDto, IAdministra
     return Results.Unauthorized();
 
 }).WithTags("Administradores");
+
+app.MapPost("/administradores/adicionar", ([FromBody] AdministradorDTO adminDto, IAdministradorServico adminService) =>
+{
+    var validacao = ValidaUsersDto(adminDto);
+    if (validacao.Mensagens.Count() > 0)
+    {
+        return Results.BadRequest(validacao);
+    }
+
+    var admin = new Administrador
+    {
+        Email = adminDto.Email,
+        Senha = adminDto.Senha,
+        Perfil = adminDto.Perfil.ToString() ?? Perfil.Editor.ToString()
+    };
+
+    adminService.Adicionar(admin);
+
+    return Results.Created($"/administradores/{admin.Id}", admin);
+
+}).WithTags("Administradores");
+
+app.MapGet("/administradores", ([FromQuery] int? pagina, IAdministradorServico adminService) =>
+{
+    var admins = new List<AdministradorModelView>();
+    var administradores = adminService.Listar(pagina);
+    foreach (var admin in administradores)
+    {
+        admins.Add(new AdministradorModelView
+        {
+            Id = admin.Id,
+            Email = admin.Email,
+            Perfil = (Perfil)Enum.Parse(typeof(Perfil), admin.Perfil)
+        });
+    }
+
+    return Results.Ok(administradores);
+}).WithTags("Administradores");
+
+app.MapGet("/administradores/{id}", ([FromRoute] int id, IAdministradorServico adminService) =>
+{
+    var admin = adminService.BuscaPorId(id);
+    if (admin == null)
+    {
+        return Results.NotFound();
+    }
+
+    var adminModelView = new AdministradorModelView
+    {
+        Id = admin.Id,
+        Email = admin.Email,
+        Perfil = (Perfil)Enum.Parse(typeof(Perfil), admin.Perfil)
+    };
+
+    return Results.Ok(adminModelView);
+
+}).WithTags("Administradores");
+
 #endregion
 
 #region Veiculos
 
+ErrosValidacao ValidaVeiculoDto(VeiculoDTO veiculoDto)
+{
+    var validacao = new ErrosValidacao
+    {
+        Mensagens = new List<string>()
+    };
+
+    if (string.IsNullOrEmpty(veiculoDto.Nome))
+    {
+        validacao.Mensagens.Add("Nome é obrigatório");
+    }
+
+    if (string.IsNullOrEmpty(veiculoDto.Marca))
+    {
+        validacao.Mensagens.Add("Marca é obrigatória");
+    }
+
+    if (veiculoDto.Ano < 1950)
+    {
+        validacao.Mensagens.Add("Aceitamos veículos a partir de 1950");
+    }
+
+    return validacao;
+}
+
 app.MapPost("/veiculos/adicionar", ([FromBody] VeiculoDTO veiculoDto, IVeiculoServico veiculoServico) =>
 {
+    var validacao = ValidaVeiculoDto(veiculoDto);
+    if (validacao.Mensagens.Count() > 0)
+    {
+        return Results.BadRequest(validacao);
+    }
+
     var veiculo = new Veiculo
     {
         Nome = veiculoDto.Nome,
@@ -66,6 +182,12 @@ app.MapPut("/veiculos/{id}", ([FromQuery] int id, [FromBody] VeiculoDTO veiculoD
     if (veiculo == null)
     {
         return Results.NotFound();
+    }
+
+    var validacao = ValidaVeiculoDto(veiculoDto);
+    if (validacao.Mensagens.Count() > 0)
+    {
+        return Results.BadRequest(validacao);
     }
 
     veiculo.Nome = veiculoDto.Nome;
@@ -102,7 +224,7 @@ app.MapGet("/veiculos", ([FromQuery] int? pagina, string? nome, string? marca, I
 app.MapGet("/veiculo/{id}", ([FromRoute] int id, IVeiculoServico veiculoServico) =>
 {
     var veiculo = veiculoServico.BuscaPorId(id);
-    if(veiculo == null)
+    if (veiculo == null)
     {
         return Results.NotFound();
     }
