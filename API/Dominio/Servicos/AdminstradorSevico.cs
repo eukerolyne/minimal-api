@@ -30,12 +30,6 @@ namespace MinimalApi.Dominio.Servicos
             _dbContexto.Administradores.Add(administrador);
             _dbContexto.SaveChanges();
         }
-
-        public void Atualizar(Administrador administrador)
-        {
-            _dbContexto.Administradores.Update(administrador);
-            _dbContexto.SaveChanges();
-        }
         
         public void Apagar(Administrador administrador)
         {

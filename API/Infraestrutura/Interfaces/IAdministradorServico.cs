@@ -12,7 +12,6 @@ namespace MinimalApi.Infraestrutura.Interfaces
         Administrador? BuscaPorId(int id);
 
         void Adicionar(Administrador administrador);
-        void Atualizar(Administrador administrador);
         void Apagar(Administrador administrador);
     }
 }
