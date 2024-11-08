@@ -30,12 +30,6 @@ namespace MinimalApi.Dominio.Servicos
             _dbContexto.Administradores.Add(administrador);
             _dbContexto.SaveChanges();
         }
-        
-        public void Apagar(Administrador administrador)
-        {
-            _dbContexto.Administradores.Remove(administrador);
-            _dbContexto.SaveChanges();
-        }
 
         public List<Administrador> Listar(int? pagina = 1)
         {

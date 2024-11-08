@@ -86,26 +86,4 @@ public class AdministradorServicosTeste
         Assert.IsNotNull(adm);
         Assert.AreEqual(admin.Id, adm.Id);
     }
-
-    [TestMethod]
-    public void TestarApagar()
-    {
-        //Arrange
-        var context = CriarContextoTeste();
-
-        var admin = new Administrador();
-        admin.Email = "teste@email.com";
-        admin.Senha = "123456";
-        admin.Perfil = "Admin";
-
-        var servicos = new AdministradorServico(context);
-        servicos.Adicionar(admin);
-
-        //Act
-        servicos.Apagar(admin);
-
-        //Assert
-        var adm = servicos.BuscaPorId(admin.Id);
-        Assert.IsNull(adm);
-    }
 }
